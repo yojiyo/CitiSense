@@ -17,5 +17,4 @@ torch
 nltk>=3.8
 google-generativeai
 python-dotenv
-tensorflow
-transformers
+requests
