@@ -1,0 +1,516 @@
+<!-- dashboard/login.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CitiSense - Admin Login</title>
+    <link rel="icon" type="image/png" href="img/logo.png">
+    <style>
+        /* --- Styles remain the same --- */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            min-height: 100vh;
+            display: flex;
+            background: linear-gradient(135deg, #1e3a8a 0%, #1e40af 50%, #2563eb 100%);
+            position: relative;
+            overflow: hidden;
+            align-items: center; /* Center vertically */
+            justify-content: center; /* Center horizontally */
+        }
+
+        /* Animated background elements */
+        body::before,
+        body::after {
+            content: '';
+            position: absolute;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.05);
+            animation: float 20s infinite ease-in-out;
+            z-index: 0; /* Behind content */
+        }
+
+        body::before {
+            width: 600px;
+            height: 600px;
+            top: -300px;
+            left: -200px;
+            animation-delay: 0s;
+        }
+
+        body::after {
+            width: 400px;
+            height: 400px;
+            bottom: -200px;
+            right: -100px;
+            animation-delay: 10s;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translate(0, 0) scale(1); }
+            50% { transform: translate(50px, 50px) scale(1.1); }
+        }
+
+        .container {
+            display: flex;
+            width: 100%;
+            max-width: 1200px;
+            /* margin: auto; No longer needed with flex centering on body */
+            padding: 40px;
+            gap: 80px;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            z-index: 1;
+        }
+
+        /* Left side - Branding */
+        .branding {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 30px;
+            animation: slideInLeft 0.8s ease-out;
+            max-width: 500px;
+        }
+
+        @keyframes slideInLeft {
+            from { opacity: 0; transform: translateX(-50px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+
+        .logo-container {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 24px;
+            width: 100%;
+        }
+
+        .logo-wrapper {
+            width: 180px;
+            height: 180px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: transform 0.3s ease;
+        }
+
+        .logo-wrapper:hover {
+            transform: translateY(-5px) scale(1.05);
+        }
+
+        .logo-wrapper img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            filter: drop-shadow(0 10px 30px rgba(0, 0, 0, 0.3));
+        }
+
+        .brand-text {
+            color: white;
+        }
+
+        .brand-text h1 {
+            font-size: 3.8rem;
+            font-weight: 800;
+            margin-bottom: 16px;
+            letter-spacing: -1.5px;
+            text-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+            line-height: 1.1;
+        }
+
+        .brand-text p {
+            font-size: 1.35rem;
+            color: rgba(255, 255, 255, 0.95);
+            line-height: 1.6;
+            font-weight: 400;
+            text-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+        }
+
+        /* Right side - Login form */
+        .login-container {
+            flex: 0 0 450px; /* Fixed width for login card area */
+            animation: slideInRight 0.8s ease-out;
+        }
+
+        @keyframes slideInRight {
+            from { opacity: 0; transform: translateX(50px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+
+        .login-card {
+            background: rgba(255, 255, 255, 0.98); /* Slightly more opaque */
+            border-radius: 24px;
+            padding: 44px 40px;
+            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.35);
+            backdrop-filter: blur(5px); /* Subtle blur effect */
+            border: 1px solid rgba(255, 255, 255, 0.1); /* Subtle border */
+        }
+
+        .login-header {
+            text-align: center;
+            margin-bottom: 36px;
+        }
+
+        .login-header h2 {
+            font-size: 1.875rem;
+            color: #0f172a; /* Dark slate */
+            margin-bottom: 8px;
+            font-weight: 700;
+        }
+
+        .login-header p {
+            font-size: 0.9375rem;
+            color: #64748b; /* Slate gray */
+        }
+
+        .form-group {
+            margin-bottom: 22px;
+        }
+
+        label {
+            display: block;
+            font-size: 0.875rem;
+            color: #3b82f6; /* Blue label */
+            margin-bottom: 8px;
+            font-weight: 600;
+        }
+
+        select, input {
+            width: 100%;
+            padding: 13px 16px;
+            font-size: 0.9375rem;
+            border: 2px solid #e2e8f0; /* Light gray border */
+            border-radius: 12px;
+            outline: none;
+            transition: all 0.3s ease;
+            background: white;
+            color: #334155; /* Darker text */
+            font-family: inherit;
+        }
+
+        select:focus, input:focus {
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.1);
+        }
+
+        select {
+            appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg width='12' height='8' viewBox='0 0 12 8' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M1 1.5L6 6.5L11 1.5' stroke='%2394a3b8' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 16px center;
+            padding-right: 45px;
+            cursor: pointer;
+            color: #94a3b8; /* Placeholder color */
+        }
+
+        /* Change color when an option is selected */
+        select:required:invalid { /* Style placeholder */
+             color: #94a3b8;
+        }
+        select:valid { /* Style selected option */
+             color: #334155;
+        }
+        select option[disabled] {
+            color: #94a3b8;
+        }
+
+
+        input::placeholder {
+            color: #cbd5e1; /* Light gray placeholder */
+        }
+
+        .password-wrapper {
+            position: relative;
+        }
+
+        .password-toggle {
+            position: absolute;
+            right: 16px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: none;
+            border: none;
+            cursor: pointer;
+            padding: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #94a3b8;
+            transition: color 0.3s ease;
+        }
+
+        .password-toggle:hover {
+            color: #64748b;
+        }
+
+        .password-toggle svg {
+            width: 20px;
+            height: 20px;
+        }
+
+        .submit-btn {
+            width: 100%;
+            padding: 15px;
+            font-size: 1rem;
+            font-weight: 600;
+            color: white;
+            background: linear-gradient(135deg, #4f46e5 0%, #3b82f6 100%);
+            border: none;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-top: 12px;
+            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.35);
+        }
+
+        .submit-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(59, 130, 246, 0.45);
+        }
+
+        .submit-btn:active {
+            transform: translateY(0);
+        }
+
+        /* Error message styling */
+        .error-message {
+             color: #b91c1c; /* Darker red text */
+             background-color: #fee2e2; /* Light red background */
+             border: 1px solid #fca5a5; /* Red border */
+             padding: 10px 15px;
+             border-radius: 8px;
+             margin-top: 16px; /* Space above error */
+             margin-bottom: 0; /* Align with form groups */
+             font-size: 0.875rem;
+             text-align: center;
+             display: none; /* Initially hidden */
+        }
+        .error-message.show {
+            display: block; /* Show when needed */
+             animation: fadeIn 0.3s ease-out;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-5px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+
+        /* Responsive */
+        @media (max-width: 1024px) {
+            .container {
+                flex-direction: column;
+                padding: 30px 20px;
+                gap: 50px;
+                align-items: center; /* Center items vertically */
+            }
+            .branding {
+                align-items: center;
+                text-align: center;
+                max-width: 100%;
+            }
+            .logo-container {
+                align-items: center;
+            }
+             .brand-text h1 { font-size: 3rem; }
+             .brand-text p { font-size: 1.2rem; }
+            .login-container {
+                flex: 1; /* Allow login container to take space */
+                width: 100%;
+                max-width: 450px; /* Keep max width */
+            }
+        }
+
+        @media (max-width: 640px) {
+            body { align-items: flex-start; /* Align content to top on mobile */ padding-top: 40px; }
+            .container { padding: 20px; gap: 40px; }
+             .login-card { padding: 36px 28px; }
+             .brand-text h1 { font-size: 2.5rem; }
+             .brand-text p { font-size: 1.1rem; }
+             .logo-wrapper { width: 140px; height: 140px; }
+             .login-header h2 { font-size: 1.625rem; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="branding">
+            <div class="logo-container">
+                <div class="logo-wrapper">
+                    <img src="img/logo.png" alt="CitiSense Logo" onerror="this.src='https://placehold.co/180x180/1e3a8a/ffffff?text=Logo'">
+                </div>
+                <div class="brand-text">
+                    <h1>CitiSense</h1>
+                    <p>Where Public Opinion Fuels Public Service Excellence.</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="login-container">
+            <div class="login-card">
+                <div class="login-header">
+                    <h2>Admin Login</h2>
+                    <p>Sign in to manage your data.</p>
+                </div>
+
+                <form id="loginForm" onsubmit="handleLogin(event)">
+                    <div class="form-group">
+                        <label for="agency">Agency</label>
+                        <select id="agency" required>
+                            <option value="" disabled selected>Select Government Agency</option>
+                            <option value="DOLE">Department of Labor and Employment (DOLE)</option>
+                            <option value="DOH">Department of Health (DOH)</option>
+                            <option value="DSWD">Department of Social Welfare and Development (DSWD)</option>
+                            <option value="DPWH">Department of Public Works and Highways (DPWH)</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="email">Email</label>
+                        <input
+                            type="email"
+                            id="email"
+                            placeholder="Enter Agency Email"
+                            required
+                        >
+                    </div>
+
+                    <div class="form-group">
+                        <label for="password">Password</label>
+                        <div class="password-wrapper">
+                            <input
+                                type="password"
+                                id="password"
+                                placeholder="Enter your password"
+                                required
+                            >
+                            <button type="button" class="password-toggle" onclick="togglePassword()">
+                                <svg id="eyeIcon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path>
+                                    <line x1="1" y1="1" x2="23" y2="23"></line>
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div id="error-message-container" class="form-group">
+                        <p id="errorMessage" class="error-message"></p> </div>
+
+                    <button type="submit" class="submit-btn">Sign in</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // --- Predefined Agency Accounts ---
+        const agencyAccounts = [
+            { agency: 'DSWD', email: 'dswd@example.com', password: 'passwordDSWD', label: 'Department of Social Welfare and Development (DSWD)' },
+            { agency: 'DOLE', email: 'dole@example.com', password: 'passwordDOLE', label: 'Department of Labor and Employment (DOLE)' },
+            { agency: 'DPWH', email: 'dpwh@example.com', password: 'passwordDPWH', label: 'Department of Public Works and Highways (DPWH)' },
+            { agency: 'DOH', email: 'doh@example.com', password: 'passwordDOH', label: 'Department of Health (DOH)' }
+        ];
+
+        const errorMessageElement = document.getElementById('errorMessage');
+
+        // Check if already logged in on page load, redirect if true
+        document.addEventListener('DOMContentLoaded', () => {
+           try {
+               // Use a simple flag for login status check
+               if (localStorage.getItem('isLoggedIn') === 'true') {
+                   console.log('Already logged in, redirecting to dashboard...');
+                   window.location.replace('dashboard.html'); // Use replace to avoid back button issues
+               }
+           } catch (e) {
+               console.warn('Could not check localStorage for login status.');
+               // Optionally show an error to the user if localStorage fails
+               // showError("Login status check failed. Please ensure localStorage is enabled."); // Can't show error easily before DOM load
+           }
+        });
+
+
+        function togglePassword() {
+            const passwordInput = document.getElementById('password');
+            const eyeIcon = document.getElementById('eyeIcon');
+            const isPassword = passwordInput.type === 'password';
+
+            passwordInput.type = isPassword ? 'text' : 'password';
+            eyeIcon.innerHTML = isPassword ? `
+                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                <circle cx="12" cy="12" r="3"></circle>
+            ` : `
+                <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path>
+                <line x1="1" y1="1" x2="23" y2="23"></line>
+            `;
+        }
+
+        function handleLogin(event) {
+            event.preventDefault();
+            errorMessageElement.textContent = ''; // Clear previous errors
+            errorMessageElement.classList.remove('show');
+
+            const agencySelect = document.getElementById('agency');
+            const agencyValue = agencySelect.value;
+            // Get the full text label from the selected option
+            const agencyLabel = agencySelect.options[agencySelect.selectedIndex]?.text || '';
+            const email = document.getElementById('email').value.trim().toLowerCase(); // Normalize email
+            const password = document.getElementById('password').value;
+
+            // --- Validation ---
+            if (!agencyValue) {
+                showError("Please select an agency.");
+                return;
+            }
+
+            // Find the predefined account that matches the SELECTED AGENCY dropdown value
+            const account = agencyAccounts.find(acc => acc.agency === agencyValue);
+
+            if (account) {
+                 // Now check if the entered email matches THIS account's email
+                 if (account.email === email) {
+                      // Check password
+                      if (account.password === password) {
+                           // --- Login Successful ---
+                           console.log('Login successful for:', account.agency);
+                           try {
+                               // Store login status and the descriptive agency label
+                               localStorage.setItem('isLoggedIn', 'true');
+                               // Store the full label selected in the dropdown for dashboard display
+                               localStorage.setItem('selectedAgencyLabel', agencyLabel);
+                               // *** NEW: Store the agency code for filtering ***
+                               localStorage.setItem('loggedInAgency', account.agency);
+                               // Redirect to dashboard using replace to prevent back button
+                               window.location.replace('dashboard.html');
+                           } catch (e) {
+                               console.error("LocalStorage error:", e);
+                               showError("Could not save login session. Please enable cookies/localStorage.");
+                           }
+                      } else {
+                           // Password mismatch
+                           showError("Incorrect credentials.");
+                      }
+                 } else {
+                      // Email mismatch for the selected agency
+                      showError(`Incorrect credentials`); // Give a hint
+                 }
+            } else {
+                 // This case means the dropdown value doesn't match any account key in agencyAccounts
+                 showError("Incorrect credentials");
+            }
+        }
+
+        function showError(message) {
+             errorMessageElement.textContent = message;
+             errorMessageElement.classList.add('show');
+        }
+    </script>
+</body>
+</html>
