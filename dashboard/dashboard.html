@@ -4881,12 +4881,21 @@
         // REPLACE this function (around line 2806)
         function handleFileSelect(event) {
             const file = event.target.files[0];
+        
+            // 1. This block runs if a valid file is chosen
             if (file && file.name.toLowerCase().endsWith('.csv')) {
-                showFilePreview(file);
-                // This line was the bug. It's now removed.
-                // document.getElementById('upload-alerts').innerHTML = ''; 
-            } else {
-                // Show a persistent error alert
+                showFilePreview(file); 
+            } 
+            // 2. This block runs if NO file is chosen (e.g., user hit "Cancel")
+            else if (!file) {
+                // No file selected, just hide the previews without showing an error
+                document.getElementById('file-preview').classList.add('hidden');
+                document.getElementById('file-preview-table').classList.add('hidden');
+                // We DON'T show an alert here
+            }
+            // 3. This block runs if the file is the WRONG TYPE (e.g., a .png)
+            else {
+                // Show a persistent error alert for wrong file type
                 showAlert('error', 'Please select a valid CSV file.', 'upload-alerts', null);
                 document.getElementById('file-preview').classList.add('hidden');
                 document.getElementById('file-preview-table').classList.add('hidden');
