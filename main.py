@@ -199,7 +199,7 @@ async def upload_and_analyze(request: Request, file: UploadFile = File(...)):
     agencies_detected_str = "None"
     
     # Get the Sentiment API URL from the environment
-    SENTIMENT_API_URL = os.getenv("SENTIMENT_API_URL")
+    SENTIMENT_API_URL = os.getenv("https://citisense.onrender.com")
     if not SENTIMENT_API_URL:
         logger.error("SENTIMENT_API_URL environment variable not set.")
         raise HTTPException(status_code=500, detail="Sentiment analysis service is not configured.")
