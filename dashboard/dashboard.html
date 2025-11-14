@@ -2823,7 +2823,7 @@
                             Download CSV Template
                         </button>
                     </div>
-                    <div class="file-preview-card">
+                    <div class="file-preview-card hidden">
                         <h3 style="font-size: 1.25rem; font-weight: 700; color: #05004E;">Uploaded
                             File Preview</h3>
                         <div id="file-preview" class="file-preview hidden">
@@ -5033,6 +5033,7 @@
 
         // REPLACE this function (around line 2920)
         function showFilePreview(file) {
+            document.getElementById('file-preview-card').classList.remove('hidden');
             document.getElementById('file-name').textContent = file.name;
             document.getElementById('file-info').textContent = `Size: ${(file.size / 1024).toFixed(1)} KB`;
             document.getElementById('file-preview').classList.remove('hidden');
