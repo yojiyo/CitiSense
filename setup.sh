@@ -20,7 +20,7 @@ Type=simple
 User=www-data
 WorkingDirectory=/opt/citisense
 Environment=PYTHONPATH=/opt/citisense
-ExecStart=/opt/citisense/venv/bin/uvicorn app.main:app --host 0.0.0.0 --port 8000
+ExecStart=/opt/citisense/venv/bin/uvicorn main:app --host 0.0.0.0 --port $PORT
 Restart=always
 
 [Install]
