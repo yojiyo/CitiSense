@@ -191,23 +191,29 @@ def preprocess_dataframe(df: pd.DataFrame) -> pd.DataFrame:
 # ---------------------------
 
 # <--- THIS IS THE REPLACEMENT FUNCTION --->
+# app/main.py (Updated /upload_and_analyze)
+# ---------------------------
+# Routes
+# ---------------------------
 @app.post("/upload_and_analyze")
 async def upload_and_analyze(request: Request, file: UploadFile = File(...)):
     logger.info(f"File upload started: {file.filename}")
     upload_id = -1
     record_count = 0
-    agencies_detected_str = "None"
+    agencies_detected_str = "N/A"
     
-    # Get the Sentiment API URL from the environment
-    SENTIMENT_API_URL = os.getenv("https://citisense.onrender.com")
+    # 1. Get the Sentiment API URL from the environment (CRITICAL CHECK)
+    SENTIMENT_API_URL = os.getenv("http://127.0.0.1:8000/analyze_texts")
     if not SENTIMENT_API_URL:
         logger.error("SENTIMENT_API_URL environment variable not set.")
-        raise HTTPException(status_code=500, detail="Sentiment analysis service is not configured.")
+        # Return HTTP 503 Service Unavailable if the model service is not defined
+        raise HTTPException(status_code=503, detail="Sentiment analysis service endpoint is not configured (SENTIMENT_API_URL missing).")
 
     try:
+        # Create initial history record
         upload_id = add_upload_record(file.filename, "Processing", 0, "N/A")
         if upload_id == -1:
-            raise HTTPException(status_code=500, detail="Failed to create initial upload history record.")
+            raise Exception("Failed to create initial upload history record.")
     except Exception as e:
         logger.error(f"Failed to create initial history record: {e}")
         raise HTTPException(status_code=500, detail=f"Database error on history creation: {e}")
@@ -222,8 +228,9 @@ async def upload_and_analyze(request: Request, file: UploadFile = File(...)):
         )
 
     try:
+        # 2. Read and Preprocess CSV Data
         file_contents_io = io.BytesIO()
-        await file.seek(0) # Go to start of file
+        await file.seek(0)
         file_contents_io.write(await file.read())
         file_contents_io.seek(0)
         
@@ -249,41 +256,50 @@ async def upload_and_analyze(request: Request, file: UploadFile = File(...)):
             elif 'Unknown' in unique_agencies and len(valid_agencies) == 0: agencies_detected_str = "Unknown"
             logger.info(f"Agencies detected for upload_id {upload_id}: {agencies_detected_str}")
 
-        # --- NEW SENTIMENT ANALYSIS BLOCK ---
-        logger.info(f"Sending {record_count} comments to Model API for analysis...")
+        # --- SENTIMENT ANALYSIS VIA EXTERNAL API ---
         
-        # 1. Get all comment texts
+        # 3. Prepare texts for external API call
         texts_to_analyze = df["comment_text"].astype(str).tolist()
         
-        # 2. Call the Hugging Face API
-        api_payload = {"texts": texts_to_analyze}
-        api_response = requests.post(SENTIMENT_API_URL, json=api_payload, timeout=300) # 5 min timeout
+        logger.info(f"Sending {len(texts_to_analyze)} comments to Model API at {SENTIMENT_API_URL}...")
         
+        # NOTE: requests.post is synchronous, so it MUST be run in a thread
+        api_response = await asyncio.to_thread(
+            requests.post, 
+            SENTIMENT_API_URL, 
+            json={"texts": texts_to_analyze}, 
+            timeout=300 # 5 min timeout
+        )
+        
+        # 4. Check API response status
         if not api_response.ok:
             logger.error(f"Sentiment API failed with status {api_response.status_code}: {api_response.text}")
-            raise HTTPException(status_code=502, detail=f"Sentiment API failed: {api_response.text}")
-        
+            update_upload_record_status(upload_id, f"Failed - API {api_response.status_code}", record_count, agencies_detected_str)
+            raise HTTPException(status_code=502, detail=f"Sentiment API failed (Status: {api_response.status_code}). Server message: {api_response.text[:200]}...")
+
+        # 5. Extract results
         api_result = api_response.json()
         sentiments = api_result.get("sentiments")
 
-        if not sentiments or len(sentiments) != record_count:
-            logger.error(f"Sentiment API returned mismatched data. Expected {record_count}, got {len(sentiments)}")
-            raise HTTPException(status_code=502, detail="Sentiment API returned invalid data.")
+        # CRITICAL FIX: Ensure sentiments variable is a list and matches row count
+        if not isinstance(sentiments, list) or len(sentiments) != record_count:
+            logger.error(f"Sentiment API returned invalid data structure or length. Expected list of length {record_count}, got {type(sentiments)} of length {len(sentiments) if isinstance(sentiments, list) else 'N/A'}")
+            update_upload_record_status(upload_id, "Failed - API Mismatch", record_count, agencies_detected_str)
+            raise HTTPException(status_code=502, detail="Sentiment API returned invalid data (length/structure mismatch).")
 
+        # 6. Map results back to DataFrame and clean up
         df["sentiment_label"] = sentiments
-        
-        # We don't have a local preprocessor, but we can fake the column
+        # We assume preprocessed_text column is just the input text for now, as local preprocessor was removed
         df["preprocessed_text"] = texts_to_analyze 
         logger.info("Batch analysis complete. Saving to database...")
-        # --- END NEW BLOCK ---
         
+        # 7. Save and Finalize
         await asyncio.to_thread(save_processed_data, df, upload_id)
         
         update_upload_record_status(upload_id, "Complete", record_count, agencies_detected_str)
         logger.info(f"Successfully processed upload_id {upload_id}")
 
         all_data_df = await asyncio.to_thread(get_all_processed_data)
-        logger.info(f"Returning {len(all_data_df)} total records after successful upload.")
         
         all_data_dict = all_data_df.to_dict(orient='records')
         cleaned_all_data = []
@@ -301,14 +317,16 @@ async def upload_and_analyze(request: Request, file: UploadFile = File(...)):
 
     except HTTPException as http_exc:
         logger.error(f"HTTP Exception for upload_id {upload_id}: {http_exc.detail}")
-        update_upload_record_status(upload_id, f"Failed - {http_exc.status_code}", record_count, agencies_detected_str)
+        # Note: Status update is already done within the try block when raising HTTPExcs related to API failure
+        if upload_id != -1:
+            update_upload_record_status(upload_id, f"Failed - Client/API Error", record_count, agencies_detected_str)
         raise http_exc
     
     except Exception as e:
-        logger.error(f"Unexpected error for upload_id {upload_id}: {str(e)}", exc_info=True)
-        update_upload_record_status(upload_id, f"Failed - Internal Error", record_count, agencies_detected_str)
-        raise HTTPException(status_code=500, detail=f"An unexpected error occurred: {str(e)}")
-
+        logger.error(f"Unexpected fatal error for upload_id {upload_id}: {str(e)}", exc_info=True)
+        if upload_id != -1:
+            update_upload_record_status(upload_id, "Failed - Internal Error", record_count, agencies_detected_str)
+        raise HTTPException(status_code=500, detail=f"An unexpected server error occurred: {str(e)}")
 
 @app.get("/get_all_data")
 async def get_all_data():
