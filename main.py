@@ -203,7 +203,7 @@ async def upload_and_analyze(request: Request, file: UploadFile = File(...)):
     agencies_detected_str = "N/A"
     
     # 1. Get the Sentiment API URL from the environment (CRITICAL CHECK)
-    SENTIMENT_API_URL = os.getenv("https://citisense.onrender.com")
+    SENTIMENT_API_URL = os.getenv("SENTIMENT_API_URL")
     if not SENTIMENT_API_URL:
         logger.error("SENTIMENT_API_URL environment variable not set.")
         # Return HTTP 503 Service Unavailable if the model service is not defined
