@@ -15,7 +15,6 @@ from pathlib import Path
 from typing import Optional
 from datetime import datetime
 import requests # <--- ADDED THIS
-# from huggingface_hub import snapshot_download # <--- REMOVED
 
 # Import database functions
 from database import (
