@@ -267,7 +267,7 @@ async def upload_and_analyze(request: Request, file: UploadFile = File(...)):
             requests.post, 
             SENTIMENT_API_URL, 
             json={"texts": texts_to_analyze}, 
-            timeout=300 # 5 min timeout
+            timeout=3600 
         )
         
         # 4. Check API response status
