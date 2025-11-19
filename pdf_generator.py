@@ -350,7 +350,7 @@ async def generate_pdf_report(request: PDFReportRequest):
             
             metrics_img = create_sentiment_distribution_chart(df) 
             if metrics_img:
-                img = Image(metrics_img, width=6*inch, height=6*inch)
+                img = Image(metrics_img, width=5*inch, height=5*inch)
                 elements.append(img)
                 elements.append(Spacer(1, 0.3*inch))
         
@@ -388,9 +388,7 @@ async def generate_pdf_report(request: PDFReportRequest):
                         elements.append(Spacer(1, 0.2*inch))
         
         # 7. AI Insights (MOVED DOWN)
-        try:
-            elements.append(PageBreak())
-            
+        try:            
             sentiment_counts = df['sentiment_label'].value_counts()
             total = int(len(df))
             pos = int(sentiment_counts.get('Positive', 0))
@@ -533,3 +531,4 @@ def get_trend_insights(data: pd.DataFrame) -> str:
         peak_pos_count = monthly_sentiment['Positive'].max()
         insight += f" Positive sentiment was highest in {peak_pos_month} ({peak_pos_count} comments)."
     return insight
+
