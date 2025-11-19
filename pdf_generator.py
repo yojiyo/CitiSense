@@ -434,8 +434,88 @@ async def generate_pdf_report(request: PDFReportRequest):
         elements.append(info)
         elements.append(Spacer(1, 0.3*inch))
         
-        # AI Insights Section
+        # --- ANALYSIS SECTIONS (MOVED UP) ---
+
+        # Sentiment Metrics Section
+        if config.get('include_metrics', True):
+            elements.append(Paragraph("Sentiment Metrics", heading_style))
+            
+            # Create metrics table
+            sentiment_counts = df['sentiment_label'].value_counts()
+            total = len(df)
+            
+            metrics_data = [
+                ['Sentiment', 'Count', 'Percentage'],
+                ['Positive', sentiment_counts.get('Positive', 0), f"{(sentiment_counts.get('Positive', 0)/total*100):.1f}%"],
+                ['Neutral', sentiment_counts.get('Neutral', 0), f"{(sentiment_counts.get('Neutral', 0)/total*100):.1f}%"],
+                ['Negative', sentiment_counts.get('Negative', 0), f"{(sentiment_counts.get('Negative', 0)/total*100):.1f}%"]
+            ]
+            
+            metrics_table = Table(metrics_data, colWidths=[2*inch, 1.5*inch, 1.5*inch])
+            metrics_table.setStyle(TableStyle([
+                ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#131C55')), # Header bg
+                ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
+                ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
+                ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+                ('FONTSIZE', (0, 0), (-1, 0), 12),
+                ('BOTTOMPADDING', (0, 0), (-1, 0), 12),
+                ('BACKGROUND', (0, 1), (-1, -1), colors.whitesmoke), # Row bg
+                ('GRID', (0, 0), (-1, -1), 1, colors.grey)
+            ]))
+            
+            elements.append(metrics_table)
+            elements.append(Spacer(1, 0.3*inch))
+            
+            # --- MODIFIED: Call the correct pie chart function ---
+            metrics_img = create_sentiment_distribution_chart(df) 
+            if metrics_img:
+                img = Image(metrics_img, width=6*inch, height=6*inch) # Adjusted size
+                elements.append(img)
+                elements.append(Spacer(1, 0.3*inch))
+        
+        # Sentiment Trends Section (Weekly)
+        if config.get('include_trends', True):
+            elements.append(PageBreak())
+            elements.append(Paragraph("Weekly Sentiment Trend", heading_style))
+            
+            weekly_img = create_weekly_sentiment_chart(df)
+            if weekly_img:
+                img = Image(weekly_img, width=7*inch, height=3.5*inch)
+                elements.append(img)
+                elements.append(Spacer(1, 0.3*inch))
+        
+        # Sentiment Trends Section (Monthly/Overall)
+        if config.get('include_overall_trend', True):
+            # If not on a new page, add a spacer
+            if not config.get('include_trends', True):
+                 elements.append(PageBreak())
+                 
+            elements.append(Paragraph("Sentiment Trend Over Time", heading_style))
+            monthly_img = create_monthly_sentiment_chart(df)
+            if monthly_img:
+                img = Image(monthly_img, width=7*inch, height=3.5*inch)
+                elements.append(img)
+                elements.append(Spacer(1, 0.3*inch))
+        
+        # Word Cloud Section
+        if config.get('include_wordcloud', True):
+            elements.append(PageBreak())
+            elements.append(Paragraph("Word Clouds", heading_style))
+            
+            for sentiment in ['Positive', 'Neutral', 'Negative']:
+                if sentiment in df['sentiment_label'].values:
+                    wc_img = create_wordcloud_image(df, sentiment)
+                    if wc_img:
+                        elements.append(Spacer(1, 0.2*inch))
+                        img = Image(wc_img, width=7*inch, height=2.625*inch) # Adjusted size
+                        elements.append(img)
+                        elements.append(Spacer(1, 0.2*inch))
+        
+        # --- AI Insights Section (MOVED HERE) ---
         try:
+            # Force a page break before AI Insights
+            elements.append(PageBreak())
+            
             # --- 1. Calculate all data points for the summary ---
             sentiment_counts = df['sentiment_label'].value_counts()
             total = int(len(df))
@@ -553,81 +633,6 @@ async def generate_pdf_report(request: PDFReportRequest):
             logger.error(f"Error during AI insight generation block: {e}", exc_info=True)
             elements.append(Paragraph("Insights generation failed.", styles['BodyText']))
             pass # Continue PDF generation even if insights fail
-
-        # Sentiment Metrics Section
-        if config.get('include_metrics', True):
-            elements.append(Paragraph("Sentiment Metrics", heading_style))
-            
-            # Create metrics table
-            sentiment_counts = df['sentiment_label'].value_counts()
-            total = len(df)
-            
-            metrics_data = [
-                ['Sentiment', 'Count', 'Percentage'],
-                ['Positive', sentiment_counts.get('Positive', 0), f"{(sentiment_counts.get('Positive', 0)/total*100):.1f}%"],
-                ['Neutral', sentiment_counts.get('Neutral', 0), f"{(sentiment_counts.get('Neutral', 0)/total*100):.1f}%"],
-                ['Negative', sentiment_counts.get('Negative', 0), f"{(sentiment_counts.get('Negative', 0)/total*100):.1f}%"]
-            ]
-            
-            metrics_table = Table(metrics_data, colWidths=[2*inch, 1.5*inch, 1.5*inch])
-            metrics_table.setStyle(TableStyle([
-                ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#131C55')), # Header bg
-                ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
-                ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
-                ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
-                ('FONTSIZE', (0, 0), (-1, 0), 12),
-                ('BOTTOMPADDING', (0, 0), (-1, 0), 12),
-                ('BACKGROUND', (0, 1), (-1, -1), colors.whitesmoke), # Row bg
-                ('GRID', (0, 0), (-1, -1), 1, colors.grey)
-            ]))
-            
-            elements.append(metrics_table)
-            elements.append(Spacer(1, 0.3*inch))
-            
-            # --- MODIFIED: Call the correct pie chart function ---
-            metrics_img = create_sentiment_distribution_chart(df) 
-            if metrics_img:
-                img = Image(metrics_img, width=6*inch, height=6*inch) # Adjusted size
-                elements.append(img)
-                elements.append(Spacer(1, 0.3*inch))
-        
-        # Sentiment Trends Section (Weekly)
-        if config.get('include_trends', True):
-            elements.append(PageBreak())
-            elements.append(Paragraph("Weekly Sentiment Trend", heading_style))
-            
-            weekly_img = create_weekly_sentiment_chart(df)
-            if weekly_img:
-                img = Image(weekly_img, width=7*inch, height=3.5*inch)
-                elements.append(img)
-                elements.append(Spacer(1, 0.3*inch))
-        
-        # Sentiment Trends Section (Monthly/Overall)
-        if config.get('include_overall_trend', True):
-            # If not on a new page, add a spacer
-            if not config.get('include_trends', True):
-                 elements.append(PageBreak())
-                 
-            elements.append(Paragraph("Sentiment Trend Over Time", heading_style))
-            monthly_img = create_monthly_sentiment_chart(df)
-            if monthly_img:
-                img = Image(monthly_img, width=7*inch, height=3.5*inch)
-                elements.append(img)
-                elements.append(Spacer(1, 0.3*inch))
-        
-        # Word Cloud Section
-        if config.get('include_wordcloud', True):
-            elements.append(PageBreak())
-            elements.append(Paragraph("Word Clouds", heading_style))
-            
-            for sentiment in ['Positive', 'Neutral', 'Negative']:
-                if sentiment in df['sentiment_label'].values:
-                    wc_img = create_wordcloud_image(df, sentiment)
-                    if wc_img:
-                        elements.append(Spacer(1, 0.2*inch))
-                        img = Image(wc_img, width=7*inch, height=2.625*inch) # Adjusted size
-                        elements.append(img)
-                        elements.append(Spacer(1, 0.2*inch))
 
         notes_text = config.get('_notes', '').strip()
         if notes_text:
