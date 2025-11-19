@@ -21,8 +21,8 @@
             background: linear-gradient(135deg, #1e3a8a 0%, #1e40af 50%, #2563eb 100%);
             position: relative;
             overflow: hidden;
-            align-items: center; /* Center vertically */
-            justify-content: center; /* Center horizontally */
+            align-items: center;
+            justify-content: center;
         }
 
         /* Animated background elements */
@@ -33,7 +33,7 @@
             border-radius: 50%;
             background: rgba(255, 255, 255, 0.05);
             animation: float 20s infinite ease-in-out;
-            z-index: 0; /* Behind content */
+            z-index: 0;
         }
 
         body::before {
@@ -61,7 +61,6 @@
             display: flex;
             width: 100%;
             max-width: 1200px;
-            /* margin: auto; No longer needed with flex centering on body */
             padding: 40px;
             gap: 80px;
             align-items: center;
@@ -137,7 +136,7 @@
 
         /* Right side - Login form */
         .login-container {
-            flex: 0 0 450px; /* Fixed width for login card area */
+            flex: 0 0 450px;
             animation: slideInRight 0.8s ease-out;
         }
 
@@ -147,12 +146,12 @@
         }
 
         .login-card {
-            background: rgba(255, 255, 255, 0.98); /* Slightly more opaque */
+            background: rgba(255, 255, 255, 0.98);
             border-radius: 24px;
             padding: 44px 40px;
             box-shadow: 0 25px 50px rgba(0, 0, 0, 0.35);
-            backdrop-filter: blur(5px); /* Subtle blur effect */
-            border: 1px solid rgba(255, 255, 255, 0.1); /* Subtle border */
+            backdrop-filter: blur(5px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
         }
 
         .login-header {
@@ -162,14 +161,14 @@
 
         .login-header h2 {
             font-size: 1.875rem;
-            color: #0f172a; /* Dark slate */
+            color: #0f172a;
             margin-bottom: 8px;
             font-weight: 700;
         }
 
         .login-header p {
             font-size: 0.9375rem;
-            color: #64748b; /* Slate gray */
+            color: #64748b;
         }
 
         .form-group {
@@ -179,7 +178,7 @@
         label {
             display: block;
             font-size: 0.875rem;
-            color: #3b82f6; /* Blue label */
+            color: #3b82f6;
             margin-bottom: 8px;
             font-weight: 600;
         }
@@ -188,12 +187,12 @@
             width: 100%;
             padding: 13px 16px;
             font-size: 0.9375rem;
-            border: 2px solid #e2e8f0; /* Light gray border */
+            border: 2px solid #e2e8f0;
             border-radius: 12px;
             outline: none;
             transition: all 0.3s ease;
             background: white;
-            color: #334155; /* Darker text */
+            color: #334155;
             font-family: inherit;
         }
 
@@ -209,28 +208,16 @@
             background-position: right 16px center;
             padding-right: 45px;
             cursor: pointer;
-            color: #94a3b8; /* Placeholder color */
-        }
-
-        /* Change color when an option is selected */
-        select:required:invalid { /* Style placeholder */
-             color: #94a3b8;
-        }
-        select:valid { /* Style selected option */
-             color: #334155;
-        }
-        select option[disabled] {
             color: #94a3b8;
         }
 
+        select:required:invalid { color: #94a3b8; }
+        select:valid { color: #334155; }
+        select option[disabled] { color: #94a3b8; }
 
-        input::placeholder {
-            color: #cbd5e1; /* Light gray placeholder */
-        }
+        input::placeholder { color: #cbd5e1; }
 
-        .password-wrapper {
-            position: relative;
-        }
+        .password-wrapper { position: relative; }
 
         .password-toggle {
             position: absolute;
@@ -248,14 +235,8 @@
             transition: color 0.3s ease;
         }
 
-        .password-toggle:hover {
-            color: #64748b;
-        }
-
-        .password-toggle svg {
-            width: 20px;
-            height: 20px;
-        }
+        .password-toggle:hover { color: #64748b; }
+        .password-toggle svg { width: 20px; height: 20px; }
 
         .submit-btn {
             width: 100%;
@@ -277,25 +258,29 @@
             box-shadow: 0 8px 20px rgba(59, 130, 246, 0.45);
         }
 
-        .submit-btn:active {
-            transform: translateY(0);
+        .submit-btn:active { transform: translateY(0); }
+        
+        .submit-btn:disabled {
+            background: #94a3b8;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
         }
 
-        /* Error message styling */
         .error-message {
-             color: #b91c1c; /* Darker red text */
-             background-color: #fee2e2; /* Light red background */
-             border: 1px solid #fca5a5; /* Red border */
+             color: #b91c1c;
+             background-color: #fee2e2;
+             border: 1px solid #fca5a5;
              padding: 10px 15px;
              border-radius: 8px;
-             margin-top: 16px; /* Space above error */
-             margin-bottom: 0; /* Align with form groups */
+             margin-top: 16px;
+             margin-bottom: 0;
              font-size: 0.875rem;
              text-align: center;
-             display: none; /* Initially hidden */
+             display: none;
         }
         .error-message.show {
-            display: block; /* Show when needed */
+            display: block;
              animation: fadeIn 0.3s ease-out;
         }
         @keyframes fadeIn {
@@ -303,34 +288,31 @@
             to { opacity: 1; transform: translateY(0); }
         }
 
-
         /* Responsive */
         @media (max-width: 1024px) {
             .container {
                 flex-direction: column;
                 padding: 30px 20px;
                 gap: 50px;
-                align-items: center; /* Center items vertically */
+                align-items: center;
             }
             .branding {
                 align-items: center;
                 text-align: center;
                 max-width: 100%;
             }
-            .logo-container {
-                align-items: center;
-            }
+            .logo-container { align-items: center; }
              .brand-text h1 { font-size: 3rem; }
              .brand-text p { font-size: 1.2rem; }
             .login-container {
-                flex: 1; /* Allow login container to take space */
+                flex: 1;
                 width: 100%;
-                max-width: 450px; /* Keep max width */
+                max-width: 450px;
             }
         }
 
         @media (max-width: 640px) {
-            body { align-items: flex-start; /* Align content to top on mobile */ padding-top: 40px; }
+            body { align-items: flex-start; padding-top: 40px; }
             .container { padding: 20px; gap: 40px; }
              .login-card { padding: 36px 28px; }
              .brand-text h1 { font-size: 2.5rem; }
@@ -404,7 +386,7 @@
                     <div id="error-message-container" class="form-group">
                         <p id="errorMessage" class="error-message"></p> </div>
 
-                    <button type="submit" class="submit-btn">Sign in</button>
+                    <button type="submit" class="submit-btn" id="submitBtn">Sign in</button>
                 </form>
             </div>
         </div>
@@ -420,19 +402,130 @@
         ];
 
         const errorMessageElement = document.getElementById('errorMessage');
+        const MAX_ATTEMPTS = 3;
+        const LOCKOUT_DURATION = 5 * 60 * 1000; // 5 minutes in milliseconds
+        let countdownInterval;
 
-        // Check if already logged in on page load, redirect if true
+        // --- Helper functions for attempt tracking ---
+        function getFailedAttempts() {
+            return parseInt(localStorage.getItem('failedLoginAttempts') || '0', 10);
+        }
+
+        function setFailedAttempts(count) {
+            localStorage.setItem('failedLoginAttempts', count);
+        }
+
+        function resetFailedAttempts() {
+            localStorage.removeItem('failedLoginAttempts');
+            localStorage.removeItem('lockoutTimestamp');
+        }
+
+        function disableUI(message) {
+            const submitBtn = document.getElementById('submitBtn');
+            const inputs = document.querySelectorAll('input, select');
+            
+            submitBtn.disabled = true;
+            submitBtn.textContent = 'Account Locked';
+            
+            inputs.forEach(input => input.disabled = true);
+            
+            if(message) showError(message);
+        }
+
+        function enableUI() {
+            const submitBtn = document.getElementById('submitBtn');
+            const inputs = document.querySelectorAll('input, select');
+            
+            submitBtn.disabled = false;
+            submitBtn.textContent = 'Sign in';
+            
+            inputs.forEach(input => input.disabled = false);
+            
+            errorMessageElement.textContent = '';
+            errorMessageElement.classList.remove('show');
+            if(countdownInterval) clearInterval(countdownInterval);
+        }
+
+        // --- Lockout Logic ---
+        function checkLockout() {
+            const lockoutStart = parseInt(localStorage.getItem('lockoutTimestamp'), 10);
+
+            // 1. Check if a lockout is currently active (timestamp exists)
+            if (lockoutStart) {
+                const now = Date.now();
+                const timePassed = now - lockoutStart;
+
+                if (timePassed < LOCKOUT_DURATION) {
+                    // Lockout is still active
+                    startCountdown(lockoutStart);
+                    return true;
+                } else {
+                    // Lockout has expired
+                    resetFailedAttempts();
+                    enableUI();
+                    return false;
+                }
+            }
+
+            // 2. Check if we need to START a new lockout (no timestamp, but attempts maxed)
+            const attempts = getFailedAttempts();
+            if (attempts >= MAX_ATTEMPTS) {
+                const now = Date.now();
+                localStorage.setItem('lockoutTimestamp', now);
+                startCountdown(now);
+                return true;
+            }
+
+            return false;
+        }
+
+        function startCountdown(startTime) {
+            // Initial update
+            updateTimer(startTime);
+            
+            // Prevent multiple intervals
+            if (countdownInterval) clearInterval(countdownInterval);
+
+            // Update every second
+            countdownInterval = setInterval(() => {
+                const stillLocked = updateTimer(startTime);
+                if (!stillLocked) {
+                    clearInterval(countdownInterval);
+                    resetFailedAttempts();
+                    enableUI();
+                }
+            }, 1000);
+        }
+
+        function updateTimer(startTime) {
+            const now = Date.now();
+            const timeLeft = LOCKOUT_DURATION - (now - startTime);
+
+            if (timeLeft <= 0) {
+                return false; // Timer finished
+            }
+
+            const minutes = Math.floor(timeLeft / 60000);
+            const seconds = Math.floor((timeLeft % 60000) / 1000);
+            
+            disableUI(`Too many failed attempts. Try again in ${minutes}m ${seconds}s.`);
+            return true; // Still locked
+        }
+
+        // --- Event Listeners ---
+        
+        // Check status on page load
         document.addEventListener('DOMContentLoaded', () => {
+           // Check lockout status first
+           if (checkLockout()) return;
+
            try {
-               // Use a simple flag for login status check
                if (localStorage.getItem('isLoggedIn') === 'true') {
                    console.log('Already logged in, redirecting to dashboard...');
-                   window.location.replace('dashboard.html'); // Use replace to avoid back button issues
+                   window.location.replace('dashboard.html');
                }
            } catch (e) {
                console.warn('Could not check localStorage for login status.');
-               // Optionally show an error to the user if localStorage fails
-               // showError("Login status check failed. Please ensure localStorage is enabled."); // Can't show error easily before DOM load
            }
         });
 
@@ -454,56 +547,56 @@
 
         function handleLogin(event) {
             event.preventDefault();
-            errorMessageElement.textContent = ''; // Clear previous errors
+            
+            // Verify lockout before processing (just in case UI was bypassed)
+            if (checkLockout()) return;
+
+            errorMessageElement.textContent = ''; 
             errorMessageElement.classList.remove('show');
 
             const agencySelect = document.getElementById('agency');
             const agencyValue = agencySelect.value;
-            // Get the full text label from the selected option
             const agencyLabel = agencySelect.options[agencySelect.selectedIndex]?.text || '';
-            const email = document.getElementById('email').value.trim().toLowerCase(); // Normalize email
+            const email = document.getElementById('email').value.trim().toLowerCase();
             const password = document.getElementById('password').value;
 
-            // --- Validation ---
             if (!agencyValue) {
                 showError("Please select an agency.");
                 return;
             }
 
-            // Find the predefined account that matches the SELECTED AGENCY dropdown value
+            let loginSuccess = false;
             const account = agencyAccounts.find(acc => acc.agency === agencyValue);
 
-            if (account) {
-                 // Now check if the entered email matches THIS account's email
-                 if (account.email === email) {
-                      // Check password
-                      if (account.password === password) {
-                           // --- Login Successful ---
-                           console.log('Login successful for:', account.agency);
-                           try {
-                               // Store login status and the descriptive agency label
-                               localStorage.setItem('isLoggedIn', 'true');
-                               // Store the full label selected in the dropdown for dashboard display
-                               localStorage.setItem('selectedAgencyLabel', agencyLabel);
-                               // *** NEW: Store the agency code for filtering ***
-                               localStorage.setItem('loggedInAgency', account.agency);
-                               // Redirect to dashboard using replace to prevent back button
-                               window.location.replace('dashboard.html');
-                           } catch (e) {
-                               console.error("LocalStorage error:", e);
-                               showError("Could not save login session. Please enable cookies/localStorage.");
-                           }
-                      } else {
-                           // Password mismatch
-                           showError("Incorrect credentials.");
-                      }
-                 } else {
-                      // Email mismatch for the selected agency
-                      showError(`Incorrect credentials`); // Give a hint
+            if (account && account.email === email && account.password === password) {
+                loginSuccess = true;
+            }
+
+            if (loginSuccess) {
+                 console.log('Login successful for:', account.agency);
+                 resetFailedAttempts(); // Reset counter on success
+                 
+                 try {
+                     localStorage.setItem('isLoggedIn', 'true');
+                     localStorage.setItem('selectedAgencyLabel', agencyLabel);
+                     localStorage.setItem('loggedInAgency', account.agency);
+                     window.location.replace('dashboard.html');
+                 } catch (e) {
+                     console.error("LocalStorage error:", e);
+                     showError("Could not save login session. Please enable cookies/localStorage.");
                  }
             } else {
-                 // This case means the dropdown value doesn't match any account key in agencyAccounts
-                 showError("Incorrect credentials");
+                 // --- Login Failed ---
+                 const currentAttempts = getFailedAttempts() + 1;
+                 setFailedAttempts(currentAttempts);
+                 
+                 const remaining = MAX_ATTEMPTS - currentAttempts;
+                 
+                 if (remaining <= 0) {
+                     checkLockout(); // Trigger lockout
+                 } else {
+                     showError(`Incorrect credentials. ${remaining} attempt(s) remaining.`);
+                 }
             }
         }
 
