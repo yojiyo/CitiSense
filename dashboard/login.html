@@ -576,10 +576,15 @@
 
             if (loginSuccess) {
                  console.log('Login successful for:', account.agency);
-                 resetFailedAttempts(); // Reset counter on success
+                 resetFailedAttempts(); 
                  
-                 // --- LOG LOGIN ACTION ---
-                 fetch(`${window.location.protocol}//${window.location.hostname}:8000/log_action`, {
+                 // --- NEW: Log Login Action ---
+                 // Determine API URL (localhost vs production)
+                 const API_BASE = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' 
+                    ? 'http://127.0.0.1:8000' 
+                    : 'https://citisense.onrender.com'; // Replace with your actual Render URL
+
+                 fetch(`${API_BASE}/log_action`, {
                      method: 'POST',
                      headers: { 'Content-Type': 'application/json' },
                      body: JSON.stringify({
@@ -588,20 +593,7 @@
                          details: "Successful admin login"
                      })
                  }).catch(err => console.error("Logging failed", err));
-                 // Use the production URL if available, or relative path if served from same origin
-                 // Since this is a standalone HTML accessing a backend, we might need the full URL or config.
-                 // Assuming standard setup:
-                 const API_URL = "https://citisense.onrender.com"; // Use your configured API_URL
-                 
-                 fetch(`${API_URL}/log_action`, {
-                     method: 'POST',
-                     headers: { 'Content-Type': 'application/json' },
-                     body: JSON.stringify({
-                         agency_name: account.agency,
-                         action: "Login",
-                         details: "Successful admin login"
-                     })
-                 }).catch(console.error);
+                 // -----------------------------
 
                  try {
                      localStorage.setItem('isLoggedIn', 'true');
@@ -634,5 +626,6 @@
     </script>
 </body>
 </html>
+
 
 
