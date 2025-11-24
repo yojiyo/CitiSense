@@ -578,6 +578,31 @@
                  console.log('Login successful for:', account.agency);
                  resetFailedAttempts(); // Reset counter on success
                  
+                 // --- LOG LOGIN ACTION ---
+                 fetch(`${window.location.protocol}//${window.location.hostname}:8000/log_action`, {
+                     method: 'POST',
+                     headers: { 'Content-Type': 'application/json' },
+                     body: JSON.stringify({
+                         agency_name: account.agency,
+                         action: "Login",
+                         details: "Successful admin login"
+                     })
+                 }).catch(err => console.error("Logging failed", err));
+                 // Use the production URL if available, or relative path if served from same origin
+                 // Since this is a standalone HTML accessing a backend, we might need the full URL or config.
+                 // Assuming standard setup:
+                 const API_URL = "https://citisense.onrender.com"; // Use your configured API_URL
+                 
+                 fetch(`${API_URL}/log_action`, {
+                     method: 'POST',
+                     headers: { 'Content-Type': 'application/json' },
+                     body: JSON.stringify({
+                         agency_name: account.agency,
+                         action: "Login",
+                         details: "Successful admin login"
+                     })
+                 }).catch(console.error);
+
                  try {
                      localStorage.setItem('isLoggedIn', 'true');
                      localStorage.setItem('selectedAgencyLabel', agencyLabel);
@@ -609,4 +634,5 @@
     </script>
 </body>
 </html>
+
 
