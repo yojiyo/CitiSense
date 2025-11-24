@@ -25,8 +25,7 @@ from database import (
     add_upload_record,
     update_upload_record_status,
     get_upload_history,
-    add_action_log,     # <--- Added
-    get_action_logs,    # <--- Added
+    add_action_log,     # <--- Import the new function
     DATABASE_FILE
 )
 from logging_config import setup_logging
@@ -191,6 +190,7 @@ def preprocess_dataframe(df: pd.DataFrame) -> pd.DataFrame:
 # ---------------------------
 # Routes
 # ---------------------------
+
 class LogActionRequest(BaseModel):
     agency_name: str
     action: str
@@ -212,7 +212,7 @@ async def log_action(request: Request, log_data: LogActionRequest):
         return {"status": "success"}
     except Exception as e:
         logger.error(f"Error logging action: {e}")
-        # Don't fail the request just because logging failed, but return error status
+        # Return error status but don't crash the caller
         return {"status": "error", "detail": str(e)}
 
 @app.get("/get_logs")
