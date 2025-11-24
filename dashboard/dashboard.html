@@ -3723,11 +3723,12 @@
             historyAlerts.innerHTML = '';
 
             let fetchUrl = `${API_URL}/get_upload_history`;
-            if (loggedInAgency) {
+            
+            if (loggedInAgency && loggedInAgency !== 'SUPER_ADMIN') {
                 fetchUrl += `?agency_name=${encodeURIComponent(loggedInAgency)}`;
                 console.log(`Fetching history filtered for agency: ${loggedInAgency}`);
             } else {
-                console.log("Fetching all upload history.");
+                console.log("Fetching all upload history (Super Admin or No Agency).");
             }
 
             try {
@@ -4079,11 +4080,14 @@
 
                     if (loggedInAgency && agencyHeading) {
                         console.log(`Admin logged in for agency: ${loggedInAgency}`);
-                        // Update agency heading immediately
-                        if (agencyLabel) {
-                            agencyHeading.textContent = `Agency: ${agencyLabel}`; // Use the stored full label
+                        
+                        // MODIFIED: Specific heading for Super Admin
+                        if (loggedInAgency === 'SUPER_ADMIN') {
+                             agencyHeading.textContent = "CitiSense Super Admin Dashboard";
+                        } else if (agencyLabel) {
+                            agencyHeading.textContent = `Agency: ${agencyLabel}`; 
                         } else {
-                            agencyHeading.textContent = `Agency: ${loggedInAgency}`; // Fallback to code if label missing
+                            agencyHeading.textContent = `Agency: ${loggedInAgency}`;
                         }
                     } else {
                         console.log('No specific agency login detected.');
@@ -4375,13 +4379,13 @@
                 console.log("No exclusion filter applied.");
             }
 
-            // 2. Apply agency filter if logged in
-            if (loggedInAgency) {
+            // 2. Apply agency filter if logged in (SKIP for SUPER_ADMIN)
+            if (loggedInAgency && loggedInAgency !== 'SUPER_ADMIN') {
                 console.log(`Applying agency filter: ${loggedInAgency}`);
                 filteredData = filteredData.filter(item => item.agency_name === loggedInAgency);
                 console.log(`Data after agency filter: ${filteredData.length} records`);
             } else {
-                console.log("No agency filter applied (loggedInAgency is null).");
+                console.log("No agency filter applied (Super Admin or No Agency).");
             }
 
             // 3. Apply date range filter
@@ -5581,7 +5585,8 @@
             generatedCsvContent = null; // Clear generated CSV
 
             // Check for logged-in agency
-            if (loggedInAgency) {
+            // MODIFIED: Logic for Super Admin vs Regular Admin
+            if (loggedInAgency && loggedInAgency !== 'SUPER_ADMIN') {
                 console.log(`Setting export dialog for logged-in agency: ${loggedInAgency}`);
                 let agencyOptionExists = false;
                 for (let i = 0; i < agencySelect.options.length; i++) {
@@ -5601,7 +5606,7 @@
                     agencySelect.disabled = false;
                 }
             } else {
-                console.log("No specific agency logged in. Enabling agency selection.");
+                console.log("Super Admin or No specific agency logged in. Enabling agency selection.");
                 agencySelect.value = 'all';
                 agencySelect.disabled = false;
             }
@@ -5617,6 +5622,7 @@
             modal.classList.remove('hidden');
             modal.style.display = 'flex';
         }
+        
         // Function to close export dialog
         function closeExportDialog() {
             const modal = document.getElementById('export-modal');
