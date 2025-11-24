@@ -1,6 +1,7 @@
 # app/main.py
 from fastapi import FastAPI, UploadFile, File, HTTPException, Query, Request
 from fastapi.middleware.cors import CORSMiddleware
+from pydantic import BaseModel # <--- Added pydantic import
 from pdf_generator import router as pdf_router
 import pandas as pd
 import numpy as np
@@ -14,7 +15,7 @@ from typing import Any, List
 from pathlib import Path
 from typing import Optional
 from datetime import datetime
-import requests # <--- ADDED THIS
+import requests
 
 # Import database functions
 from database import (
@@ -24,6 +25,8 @@ from database import (
     add_upload_record,
     update_upload_record_status,
     get_upload_history,
+    add_action_log,     # <--- Added
+    get_action_logs,    # <--- Added
     DATABASE_FILE
 )
 from logging_config import setup_logging
@@ -188,12 +191,59 @@ def preprocess_dataframe(df: pd.DataFrame) -> pd.DataFrame:
 # ---------------------------
 # Routes
 # ---------------------------
+class LogActionRequest(BaseModel):
+    agency_name: str
+    action: str
+    details: Optional[str] = ""
 
-# <--- THIS IS THE REPLACEMENT FUNCTION --->
-# app/main.py (Updated /upload_and_analyze)
-# ---------------------------
-# Routes
-# ---------------------------
+@app.post("/log_action")
+async def log_action(request: Request, log_data: LogActionRequest):
+    """
+    Log a user action. Captures IP from the request.
+    """
+    try:
+        ip = request.client.host
+        # If behind a proxy (like Render), try to get the real IP header
+        forwarded = request.headers.get("x-forwarded-for")
+        if forwarded:
+            ip = forwarded.split(",")[0]
+            
+        await asyncio.to_thread(add_action_log, log_data.agency_name, log_data.action, ip, log_data.details)
+        return {"status": "success"}
+    except Exception as e:
+        logger.error(f"Error logging action: {e}")
+        # Don't fail the request just because logging failed, but return error status
+        return {"status": "error", "detail": str(e)}
+
+@app.get("/get_logs")
+async def get_logs_endpoint(agency_name: Optional[str] = None):
+    """
+    Retrieve audit logs.
+    """
+    try:
+        df = await asyncio.to_thread(get_action_logs, agency_name)
+        if df.empty:
+            return {"logs": []}
+        
+        # Convert to dict and handle datetimes
+        logs = df.to_dict(orient='records')
+        cleaned_logs = []
+        for record in logs:
+            cleaned = {}
+            for k, v in record.items():
+                if isinstance(v, pd.Timestamp):
+                    cleaned[k] = v.isoformat()
+                elif pd.isna(v):
+                    cleaned[k] = None
+                else:
+                    cleaned[k] = v
+            cleaned_logs.append(cleaned)
+            
+        return {"logs": cleaned_logs}
+    except Exception as e:
+        logger.error(f"Error fetching logs: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
 @app.post("/upload_and_analyze")
 async def upload_and_analyze(request: Request, file: UploadFile = File(...)):
     logger.info(f"File upload started: {file.filename}")
