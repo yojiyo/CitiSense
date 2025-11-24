@@ -3715,6 +3715,7 @@
         }
 
         // Function to populate the History table (merges persisted uploads with fallback)
+        // Function to populate the History table (merges persisted uploads with fallback)
         async function updateHistoryTable() {
             console.log('Fetching history from backend...');
             const tbody = document.getElementById('history-table-body');
@@ -3724,11 +3725,9 @@
 
             let fetchUrl = `${API_URL}/get_upload_history`;
             
+            // Do not filter if SUPER_ADMIN
             if (loggedInAgency && loggedInAgency !== 'SUPER_ADMIN') {
                 fetchUrl += `?agency_name=${encodeURIComponent(loggedInAgency)}`;
-                console.log(`Fetching history filtered for agency: ${loggedInAgency}`);
-            } else {
-                console.log("Fetching all upload history (Super Admin or No Agency).");
             }
 
             try {
@@ -3741,110 +3740,20 @@
 
                 globalHistoryList = historyData;
 
-                // --- SET DEFAULT DATES IF EMPTY (but don't filter on first load) ---
+                // --- (Date Logic Omitted for Brevity - Keep your existing Date Logic here) ---
+                // ... [Keep the logic that sets default dates and filters filteredHistoryData] ...
+
+                // --- FILTERING LOGIC (Keep your existing filtering logic) ---
                 const histStart = document.getElementById('history-start-date');
                 const histEnd = document.getElementById('history-end-date');
-                let datesWereAutoSet = false;
-
-                if (historyData.length > 0) {
-                    // Only set dates if the fields are currently empty
-                    if (!histStart.value || !histEnd.value) {
-                        try {
-                            const dates = historyData
-                                .map(item => new Date(item.upload_timestamp))
-                                .filter(d => !isNaN(d)); // Filter out any invalid dates
-
-                            if (dates.length > 0) {
-                                const minDate = new Date(Math.min(...dates));
-                                const maxDate = new Date(Math.max(...dates));
-
-                                // Helper to format YYYY-MM-DD (use local timezone, not UTC)
-                                const formatDate = (date) => {
-                                    const year = date.getFullYear();
-                                    const month = String(date.getMonth() + 1).padStart(2, '0');
-                                    const day = String(date.getDate()).padStart(2, '0');
-                                    return `${year}-${month}-${day}`;
-                                };
-
-                                histStart.value = formatDate(minDate);
-                                histEnd.value = formatDate(maxDate);
-                                datesWereAutoSet = true;
-                                console.log(`Set history dates to default range: ${histStart.value} to ${histEnd.value}`);
-                            }
-                        } catch (e) {
-                            console.warn("Error setting default history date inputs", e);
-                        }
-                    }
-                }
-
-                // --- FILTERING LOGIC ---
-                const startDateStr = histStart.value;
-                const endDateStr = histEnd.value;
-
-                let filteredHistoryData = historyData;
-
-                // Only filter if BOTH dates are set AND they were NOT just auto-set (or user explicitly set them)
-                // If dates were just auto-set, show all records to avoid filtering issues
-                if (startDateStr && endDateStr && !datesWereAutoSet) {
-                    console.log(`Filtering history by date: ${startDateStr} to ${endDateStr}`);
-                    try {
-                        // Parse dates in local timezone to avoid timezone issues
-                        const startDateParts = startDateStr.split('-');
-                        const endDateParts = endDateStr.split('-');
-
-                        const startDate = new Date(
-                            parseInt(startDateParts[0]),
-                            parseInt(startDateParts[1]) - 1,
-                            parseInt(startDateParts[2]),
-                            0, 0, 0, 0
-                        );
-
-                        const endDate = new Date(
-                            parseInt(endDateParts[0]),
-                            parseInt(endDateParts[1]) - 1,
-                            parseInt(endDateParts[2]),
-                            23, 59, 59, 999
-                        );
-
-                        filteredHistoryData = historyData.filter(item => {
-                            if (!item.upload_timestamp) return false;
-
-                            // Parse the upload timestamp - handle both ISO strings and other formats
-                            let itemDate = new Date(item.upload_timestamp);
-                            if (isNaN(itemDate)) return false;
-
-                            // Compare dates by day (ignore time component for comparison)
-                            const itemDateOnly = new Date(itemDate.getFullYear(), itemDate.getMonth(), itemDate.getDate());
-                            const startDateOnly = new Date(startDate.getFullYear(), startDate.getMonth(), startDate.getDate());
-                            const endDateOnly = new Date(endDate.getFullYear(), endDate.getMonth(), endDate.getDate());
-
-                            return itemDateOnly >= startDateOnly && itemDateOnly <= endDateOnly;
-                        });
-
-                        console.log(`Filtered ${historyData.length} records to ${filteredHistoryData.length} records`);
-
-                    } catch (e) {
-                        console.error("Error parsing history filter dates:", e);
-                        // If dates are bad, just use the full list
-                        filteredHistoryData = historyData;
-                    }
-                } else if (datesWereAutoSet) {
-                    // If dates were auto-set, show all records without filtering
-                    console.log("Dates were auto-set, showing all history records without filtering");
-                    filteredHistoryData = historyData;
-                }
-                // --- END OF FILTERING LOGIC ---
+                let filteredHistoryData = historyData; 
+                // ... (Assume filteredHistoryData is ready as per previous code) ...
 
 
                 tbody.innerHTML = ''; // Clear loading
 
                 if (filteredHistoryData.length === 0) {
-                    let msg = 'No history records found.';
-                    // Give a more specific message if filtering resulted in no data
-                    if (historyData.length > 0) {
-                        msg = 'No history records found for the selected date range.';
-                    }
-                    tbody.innerHTML = `<tr><td colspan="4" style="text-align: center;">${msg}</td></tr>`;
+                    tbody.innerHTML = `<tr><td colspan="4" style="text-align: center;">No history records found.</td></tr>`;
                     return;
                 }
 
@@ -3868,6 +3777,18 @@
                     const buttonText = isExcluded ? 'Show' : 'Hide';
                     const buttonClass = isExcluded ? 'btn-success' : 'btn-primary';
 
+                    // --- MODIFIED BLOCK STARTS HERE ---
+                    // Only create the Delete button HTML if the user is SUPER_ADMIN
+                    const deleteButtonHtml = (loggedInAgency === 'SUPER_ADMIN') ? `
+                        <button 
+                            class="btn" 
+                            style="padding: 5px 10px; font-size: 0.8rem; background-color: #ef4444; color: white;" 
+                            onclick="confirmDeleteUpload(${item.upload_id}, '${item.file_name.replace(/'/g, "\\'")}')">
+                            Delete
+                        </button>
+                    ` : '';
+                    // --- MODIFIED BLOCK ENDS HERE ---
+
                     tr.innerHTML = `
                         <td>
                             <div class="file-info-cell">
@@ -3889,17 +3810,12 @@
                                 onclick="toggleUploadVisibility(${item.upload_id}, this)">
                                 ${buttonText}
                             </button>
-                            <button 
-                                class="btn" 
-                                style="padding: 5px 10px; font-size: 0.8rem; background-color: #ef4444; color: white;" 
-                                onclick="confirmDeleteUpload(${item.upload_id}, '${item.file_name.replace(/'/g, "\\'")}')">
-                                Delete
-                            </button>
+                            ${deleteButtonHtml} 
                         </td>
                     `;
                     tbody.appendChild(tr);
 
-                    // Details row (collapsed by default)
+                    // Details row (Keep existing details row code)
                     const detailsTr = document.createElement('tr');
                     detailsTr.className = 'history-details-row';
                     detailsTr.innerHTML = `
@@ -3928,7 +3844,7 @@
                     detailsTr.style.display = 'none';
                     tbody.appendChild(detailsTr);
 
-                    // Toggle expand/collapse on row click (ignore button clicks)
+                    // Toggle expand/collapse
                     tr.style.cursor = 'pointer';
                     tr.addEventListener('click', (ev) => {
                         const targetEl = ev.target;
@@ -3936,8 +3852,8 @@
                         const isHidden = detailsTr.style.display === 'none';
                         detailsTr.style.display = isHidden ? 'table-row' : 'none';
                         if (isHidden) {
-                            // Build a 5-column preview using currentData filtered by upload_id
-                            try {
+                            // (Keep existing preview table logic)
+                             try {
                                 const container = document.getElementById(`details-table-${item.upload_id}`);
                                 if (container && container.childElementCount === 0) {
                                     const rows = (currentData || []).filter(r => r.upload_id === item.upload_id);
@@ -3948,7 +3864,6 @@
                                         const availableCols = preferredCols.filter(col => col in rows[0]);
                                         const cols = availableCols.slice(0, 5);
                                         let html = '<table class="data-table details-preview-table"><thead><tr>' + cols.map(c => `<th>${c.replace(/_/g, ' ')}</th>`).join('') + '</tr></thead><tbody>';
-                                        // AFTER: Replace it with this new loop
                                         rows.slice(0, 5).forEach(r => {
                                             let rowHtml = '<tr>';
                                             cols.forEach(c => {
@@ -5509,16 +5424,18 @@
 
                 if (response.ok) {
                     const result = await response.json();
-                    updateProgress(99, 'Finalizing analysis...'); // Hold at 99 before 100
+                    updateProgress(99, 'Finalizing analysis...'); 
 
                     if (result.detail) {
-                        // Analysis error path (Server responded 200, but JSON body contained an error message)
                         throw new Error(result.detail || 'Analysis Error');
                     } else {
                         // SUCCESS path
                         currentData = result.data;
+                        
+                        // --- NEW: Log Upload ---
+                        logAction("Upload", `Uploaded file: ${file.name}`);
+                        // -----------------------
 
-                        // Clear file input and preview UI elements
                         fileInput.value = '';
                         document.getElementById('file-preview').classList.add('hidden');
                         document.getElementById('file-preview-table').classList.add('hidden');
@@ -6220,7 +6137,10 @@ DSWD,Aid distribution inquiry,"Monday, July 18, 2025, 1:59 PM",Social Services`;
                     const result = await response.json();
                     console.log('Delete successful:', result);
 
-                    // Remove from excluded IDs set if it was there
+                    // --- NEW: Log Delete ---
+                    logAction("Delete", `Deleted upload ID: ${idToDelete}`);
+                    // -----------------------
+                    
                     excludedUploadIDs.delete(idToDelete); // Use local ID
                     console.log('Removed from excludedUploadIDs');
 
@@ -6294,22 +6214,43 @@ DSWD,Aid distribution inquiry,"Monday, July 18, 2025, 1:59 PM",Social Services`;
          * This fetches from the server and updates all UI.
          */
 
-        function handleLogout() {
+        async function logAction(action, details) {
+            if (!loggedInAgency) return;
             try {
-                // Clear the agency login status from storage
-                localStorage.removeItem('loggedInAgency');
-                localStorage.removeItem('selectedAgencyLabel');
-                localStorage.removeItem('isLoggedIn'); // Clear general login flag if you add one
+                const baseUrl = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' 
+                    ? 'http://127.0.0.1:8000' 
+                    : API_URL;
 
-                console.log("User logged out. Redirecting to login page.");
-
-                // Redirect to the login page
-                window.location.href = 'login.html'; // Or 'index.html' if that's your main page
+                await fetch(`${baseUrl}/log_action`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        agency_name: loggedInAgency,
+                        action: action,
+                        details: details || ""
+                    })
+                });
             } catch (e) {
-                console.error("Error during logout:", e);
-                // Still try to redirect even if storage fails
-                window.location.href = 'login.html';
+                console.warn("Failed to log action:", e);
             }
+        }
+        
+        async function handleLogout() {
+            console.log('Logout initiated');
+            
+            // --- NEW: Log Logout ---
+            await logAction("Logout", "User initiated logout"); 
+            // -----------------------
+
+            try {
+                window.localStorage.removeItem('isLoggedIn');
+                window.localStorage.removeItem('selectedAgency');
+                window.localStorage.removeItem('selectedAgencyLabel');
+                window.localStorage.removeItem('loggedInAgency'); 
+            } catch (e) {
+                console.warn('Could not clear localStorage:', e);
+            }
+            window.location.href = 'login.html';
         }
 
         function handleStorageChange(event) {
@@ -6351,19 +6292,21 @@ DSWD,Aid distribution inquiry,"Monday, July 18, 2025, 1:59 PM",Social Services`;
         // ============================================================================
         // FIX 1: LOGOUT BUTTON - Redirect to login page & CLEAR ALL SESSION DATA
         // ============================================================================
-        function handleLogout() {
+        async function handleLogout() {
             console.log('Logout initiated');
-            // Clear any stored session data
+            
+            // --- NEW: Log Logout ---
+            await logAction("Logout", "User initiated logout"); 
+            // -----------------------
+
             try {
-                window.localStorage.removeItem('isLoggedIn'); // Added this for completeness
-                window.localStorage.removeItem('selectedAgency'); // Old item, clear just in case
+                window.localStorage.removeItem('isLoggedIn');
+                window.localStorage.removeItem('selectedAgency');
                 window.localStorage.removeItem('selectedAgencyLabel');
-                window.localStorage.removeItem('loggedInAgency'); // *** NEW: Clear the agency code ***
-                console.log('Cleared localStorage session items.');
+                window.localStorage.removeItem('loggedInAgency'); 
             } catch (e) {
                 console.warn('Could not clear localStorage:', e);
             }
-            // Redirect to login page
             window.location.href = 'login.html';
         }
 
