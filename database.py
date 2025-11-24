@@ -1,16 +1,4 @@
 # app/database.py
-import sqlite3
-import pandas as pd
-import numpy as np
-from pathlib import Path
-import os
-import logging
-from datetime import datetime
-
-logger = logging.getLogger(__name__)
-
-DATABASE_FILE = "citisense.db"
-
 def init_database():
     """Initialize the database with required tables."""
     conn = sqlite3.connect(DATABASE_FILE)
@@ -46,9 +34,20 @@ def init_database():
     )
     ''')
 
+    cursor.execute('''
+    CREATE TABLE IF NOT EXISTS action_logs (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        agency_name TEXT,
+        action TEXT,
+        ip_address TEXT,
+        details TEXT,
+        timestamp DATETIME DEFAULT CURRENT_TIMESTAMP
+    )
+    ''')
+
     conn.commit()
     conn.close()
-    logger.info("Database initialized with processed_comments (with upload_id) and upload_history tables")
+    logger.info("Database initialized with processed_comments, upload_history, and action_logs tables")
 
 # --- processed_comments functions ---
 def save_processed_data(df, upload_id):
@@ -262,4 +261,45 @@ def get_upload_history(agency_name: str | None = None) -> pd.DataFrame:
         conn.close()
 
     logger.info(f"Retrieved {len(df)} upload history records for agency context: {agency_name or 'All'}")
+    return df
+
+
+# --- action_logs functions ---
+def add_action_log(agency_name: str, action: str, ip_address: str, details: str = ""):
+    """Adds a log entry for user actions."""
+    conn = sqlite3.connect(DATABASE_FILE)
+    cursor = conn.cursor()
+    try:
+        cursor.execute('''
+            INSERT INTO action_logs (agency_name, action, ip_address, details)
+            VALUES (?, ?, ?, ?)
+        ''', (agency_name, action, ip_address, details))
+        conn.commit()
+        logger.info(f"Logged action '{action}' for {agency_name} from {ip_address}")
+    except Exception as e:
+        logger.error(f"Failed to add action log: {e}")
+    finally:
+        conn.close()
+
+def get_action_logs(agency_name: str | None = None) -> pd.DataFrame:
+    """Retrieves action logs. If agency_name is provided (and not SUPER_ADMIN), filters by agency."""
+    if not Path(DATABASE_FILE).exists():
+        return pd.DataFrame()
+
+    conn = sqlite3.connect(DATABASE_FILE)
+    query = 'SELECT * FROM action_logs ORDER BY timestamp DESC'
+    params = []
+
+    if agency_name and agency_name != "SUPER_ADMIN":
+        query = 'SELECT * FROM action_logs WHERE agency_name = ? ORDER BY timestamp DESC'
+        params = [agency_name]
+
+    try:
+        df = pd.read_sql_query(query, conn, params=params)
+    except Exception as e:
+        logger.error(f"Error reading from action_logs table: {e}")
+        return pd.DataFrame()
+    finally:
+        conn.close()
+    
     return df
