@@ -348,6 +348,7 @@
                         <label for="agency">Agency</label>
                         <select id="agency" required>
                             <option value="" disabled selected>Select Government Agency</option>
+                            <option value="SUPER_ADMIN">CitiSense Super Admin</option>
                             <option value="DOLE">Department of Labor and Employment (DOLE)</option>
                             <option value="DOH">Department of Health (DOH)</option>
                             <option value="DSWD">Department of Social Welfare and Development (DSWD)</option>
@@ -395,6 +396,7 @@
     <script>
         // --- Predefined Agency Accounts ---
         const agencyAccounts = [
+            { agency: 'SUPER_ADMIN', email: 'admin@citisense.com', password: 'adminPassword123', label: 'CitiSense Super Administrator' },
             { agency: 'DSWD', email: 'dswd@example.com', password: 'passwordDSWD', label: 'Department of Social Welfare and Development (DSWD)' },
             { agency: 'DOLE', email: 'dole@example.com', password: 'passwordDOLE', label: 'Department of Labor and Employment (DOLE)' },
             { agency: 'DPWH', email: 'dpwh@example.com', password: 'passwordDPWH', label: 'Department of Public Works and Highways (DPWH)' },
@@ -607,3 +609,4 @@
     </script>
 </body>
 </html>
+
