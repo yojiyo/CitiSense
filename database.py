@@ -281,25 +281,19 @@ def add_action_log(agency_name: str, action: str, ip_address: str, details: str 
     finally:
         conn.close()
 
-def get_action_logs(agency_name: str | None = None) -> pd.DataFrame:
-    """Retrieves action logs. If agency_name is provided (and not SUPER_ADMIN), filters by agency."""
-    if not Path(DATABASE_FILE).exists():
-        return pd.DataFrame()
-
+def add_action_log(agency_name: str, action: str, ip_address: str, details: str = ""):
+    """Adds a log entry for user actions."""
     conn = sqlite3.connect(DATABASE_FILE)
-    query = 'SELECT * FROM action_logs ORDER BY timestamp DESC'
-    params = []
-
-    if agency_name and agency_name != "SUPER_ADMIN":
-        query = 'SELECT * FROM action_logs WHERE agency_name = ? ORDER BY timestamp DESC'
-        params = [agency_name]
-
+    cursor = conn.cursor()
     try:
-        df = pd.read_sql_query(query, conn, params=params)
+        cursor.execute('''
+            INSERT INTO action_logs (agency_name, action, ip_address, details)
+            VALUES (?, ?, ?, ?)
+        ''', (agency_name, action, ip_address, details))
+        conn.commit()
+        logger.info(f"Logged action '{action}' for {agency_name} from {ip_address}")
     except Exception as e:
-        logger.error(f"Error reading from action_logs table: {e}")
-        return pd.DataFrame()
+        logger.error(f"Failed to add action log: {e}")
     finally:
         conn.close()
-    
-    return df
+
