@@ -274,7 +274,7 @@ def create_wordcloud_image(df, sentiment):
 
     wordcloud = WordCloud(
         width=800, height=300, background_color="white",
-        color_func=random_color_func, collocations=False, max_words=100, prefer_horizontal=1.0
+        color_func=color_palette, collocations=False, max_words=100, prefer_horizontal=1.0
     ).generate_from_frequencies(word_counts)
     
     fig, ax = plt.subplots(figsize=(8, 3))
@@ -534,6 +534,7 @@ def get_trend_insights(data: pd.DataFrame) -> str:
         peak_pos_count = monthly_sentiment['Positive'].max()
         insight += f" Positive sentiment was highest in {peak_pos_month} ({peak_pos_count} comments)."
     return insight
+
 
 
 
