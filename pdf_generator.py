@@ -1,4 +1,4 @@
-#pdf_generator/py
+#pdf_generator.py
 from dotenv import load_dotenv
 load_dotenv()
 from fastapi import APIRouter, HTTPException
@@ -268,8 +268,7 @@ def create_wordcloud_image(df, sentiment):
     
     color_palette = ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#0ea5e9', '#d946ef', '#eab308', '#f43f5e', '#22d3ee']
     
-    # Updated to accept *args to handle positional arguments from WordCloud
-    def random_color_func(*args, **kwargs): 
+    def random_color_func(*args, **kwargs):
         return kwargs['random_state'].choice(color_palette)
 
     wordcloud = WordCloud(
@@ -534,5 +533,3 @@ def get_trend_insights(data: pd.DataFrame) -> str:
         peak_pos_count = monthly_sentiment['Positive'].max()
         insight += f" Positive sentiment was highest in {peak_pos_month} ({peak_pos_count} comments)."
     return insight
-
-
