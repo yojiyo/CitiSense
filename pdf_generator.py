@@ -267,7 +267,10 @@ def create_wordcloud_image(df, sentiment):
     if not word_counts: return None
     
     color_palette = ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#0ea5e9', '#d946ef', '#eab308', '#f43f5e', '#22d3ee']
-    def random_color_func(**kwargs): return kwargs['random_state'].choice(color_palette)
+    
+    # Updated to accept *args to handle positional arguments from WordCloud
+    def random_color_func(*args, **kwargs): 
+        return kwargs['random_state'].choice(color_palette)
 
     wordcloud = WordCloud(
         width=800, height=300, background_color="white",
@@ -531,4 +534,5 @@ def get_trend_insights(data: pd.DataFrame) -> str:
         peak_pos_count = monthly_sentiment['Positive'].max()
         insight += f" Positive sentiment was highest in {peak_pos_month} ({peak_pos_count} comments)."
     return insight
+
 
