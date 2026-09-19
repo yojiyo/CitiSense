@@ -2,7 +2,18 @@
 
 > A Web App in Enhancing the Regional Government Agencies Feedback Systems in Pampanga through Facebook Sentiment Analysis with Decision Support Dashboard
 
-Welcome to the repository for **CitiSense**, an academic thesis project completed in May 2026 by Mark Gio G. Alcuizar, Haidee Adreanne F. Duarte, Angeline L. Ruin, and John Ryan P. Trinidad at Angeles University Foundation.
+Welcome to the repository for **CitiSense**, an academic thesis project completed in May 2026 at Angeles University Foundation.
+
+# 👥 Project Team & Roles
+
+| Team Member | Role |
+|---|---|
+| John Ryan P. Trinidad | Project Manager |
+| Haidee Adreanne F. Duarte | UI/UX Developer |
+| Angeline L. Ruin | Data Pre-processing |
+| Mark Gio G. Alcuizar | Software Developer |
+
+---
 
 ---
 
@@ -44,3 +55,5 @@ The project evaluated four distinct machine learning algorithms: Random Forest, 
 ## 📈 Project Impact
 
 The CitiSense web application was evaluated by domain experts and stakeholders using the System Usability Scale (SUS) and ISO 25010 standards. The platform effectively aids agencies in prioritizing public issues and proactive management by instantly identifying rising negative sentiments, successfully bridging the communication gap between the community and local government.
+
+Welcome to the repository for **CitiSense**, an academic thesis project completed in May 2026 by Mark Gio G. Alcuizar, Haidee Adreanne F. Duarte, Angeline L. Ruin, and John Ryan P. Trinidad at Angeles University Foundation.
